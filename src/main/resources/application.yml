@@ -1,0 +1,27 @@
+server:
+  port: ${SERVER_PORT:9080}
+
+spring:
+  jackson:
+    mapper:
+      ACCEPT_CASE_INSENSITIVE_ENUMS: true
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: student
+      uri: mongodb://localhost:27017/student
+  devtools:
+    restart:
+      enabled: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  config: classpath:logback-${ENV:development}.xml
+

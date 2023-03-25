@@ -1,0 +1,23 @@
+spring:
+  jackson:
+    mapper:
+      ACCEPT_CASE_INSENSITIVE_ENUMS: true
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  mongodb:
+    embedded:
+      version: 4.0.21
+  data:
+    mongodb:
+      host: localhost
+      port: 0
+      database: student
+de:
+  flapdoodle:
+    mongodb:
+      embedded:
+        version: 4.0.21
+
+logging:
+  config: classpath:logback-${ENV:development}.xml
