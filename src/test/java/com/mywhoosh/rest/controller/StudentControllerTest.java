@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.slf4j.helpers.MessageFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataMongo;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
@@ -146,7 +147,7 @@ class StudentControllerTest {
                 .expectStatus().isNotFound()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo("failed")
-                .jsonPath("$.message").isEqualTo(ErrorMsgs.STUDENT_NOT_FOUND);
+                .jsonPath("$.message").isEqualTo(MessageFormatter.format(ErrorMsgs.STUDENT_NOT_FOUND, 10).getMessage());
 
     }
 }
