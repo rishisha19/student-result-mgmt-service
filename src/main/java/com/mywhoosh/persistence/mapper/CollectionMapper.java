@@ -7,7 +7,7 @@ import com.mywhoosh.rest.model.StudentDTO;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
-public interface EntityMapper {
+public interface CollectionMapper {
     Student toStudentEntity(StudentDTO studentDto);
     StudentDTO toStudentDto(Student student);
     Result toResultEntity(ResultDTO resultDTO);

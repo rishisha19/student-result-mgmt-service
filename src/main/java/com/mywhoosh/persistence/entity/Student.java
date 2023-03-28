@@ -1,10 +1,6 @@
 package com.mywhoosh.persistence.entity;
 
 import com.mywhoosh.common.Status;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
@@ -13,6 +9,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Document(collection = "student")
@@ -34,7 +32,6 @@ public class Student {
 
     @NotNull
     private Integer grade;
-    @Enumerated(EnumType.STRING)
     private Status status;
     @CreatedDate
     @Field("createdOn")

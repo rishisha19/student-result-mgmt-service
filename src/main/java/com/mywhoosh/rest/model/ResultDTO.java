@@ -4,50 +4,41 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mywhoosh.common.Remarks;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.time.LocalDateTime;
 
 @Builder
 @Getter
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor
 @RequiredArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ResultDTO {
 
-    @NotNull
     @JsonProperty("TotalMarks")
     Integer totalMarks;
 
-    @NotNull
     @JsonProperty("ObtainedMarks")
-    Integer obtainedMarks;
+    int obtainedMarks;
 
-    @NotNull
     @Min(value = 1, message = "Roll number should be greater than 0 & less than 100")
     @Max(value = 100, message = "Roll number should be greater than 0 & less than 100")
     @JsonProperty("RollNumber")
-    Integer rollNumber;
+    int rollNumber;
 
-    @NotNull
     @Min(value = 1, message = "Grade should be greater than 0 and less than 10")
     @Max(value = 10, message = "Grade should be greater than 0 and less than 10")
     @JsonProperty("Grade")
-    Integer grade;
+    int grade;
 
-    @Enumerated(EnumType.STRING)
     @JsonProperty("Remarks")
     Remarks remarks;
     @JsonProperty("PositionInClass")
-    Integer positionInClass;
+    int positionInClass;
 
     @JsonProperty("CreatedOn")
     public LocalDateTime createdOn;

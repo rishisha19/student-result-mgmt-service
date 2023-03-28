@@ -2,6 +2,11 @@ server:
   port: ${SERVER_PORT:9080}
 
 spring:
+#  rsocket:
+#    server:
+#      transport: websocket
+#      port: ${server.port}
+#      mapping-path: /ws
   jackson:
     mapper:
       ACCEPT_CASE_INSENSITIVE_ENUMS: true
@@ -14,9 +19,23 @@ spring:
       port: 27017
       database: student
       uri: mongodb://localhost:27017/student
+
+  webflux:
+    problemdetails:
+      enabled: true
+
+jwt:
+  secretKey: ecf1222c-88fd-47f3-988f-bdd78bade1ad
+
   devtools:
     restart:
       enabled: true
+
+  logging:
+    level:
+      org.springframework.web: INFO
+      org.springframework.security: DEBUG
+      com.example: DEBUG
 
 springdoc:
   swagger-ui:
