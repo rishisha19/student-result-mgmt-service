@@ -1,5 +1,7 @@
 
 spring:
+  main:
+    web-application-type: reactive
   jackson:
     mapper:
       ACCEPT_CASE_INSENSITIVE_ENUMS: true
@@ -34,4 +36,3 @@ de:
 
 logging:
   config: classpath:logback-${ENV:test}.xml
-

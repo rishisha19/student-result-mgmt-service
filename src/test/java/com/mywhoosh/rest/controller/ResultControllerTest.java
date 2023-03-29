@@ -4,12 +4,13 @@ import com.mywhoosh.common.AppConstants;
 import com.mywhoosh.common.Remarks;
 import com.mywhoosh.exception.ErrorMsgs;
 import com.mywhoosh.rest.model.ResultDTO;
+import com.mywhoosh.service.impl.AuthService;
+import com.mywhoosh.util.TestUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import org.slf4j.helpers.MessageFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataMongo;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
@@ -36,7 +37,6 @@ import java.util.function.Consumer;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
-@AutoConfigureDataMongo
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
@@ -52,9 +52,18 @@ public class ResultControllerTest {
     private WebSocketStompClient stompClient;
 
     private final WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
+    StompHeaders stompHeaders = new StompHeaders();
+    @Autowired
+    private AuthService authService;
+    String token;
 
     @BeforeAll
     public void setup() {
+
+        token = TestUtils.registerUserAndRetrieveToken(authService, client, "wsadmin", "wsadmin");
+        stompHeaders.setDestination("/app/results");
+        stompHeaders.add("Authorization", "Bearer " + token);
+        this.headers.set("Authorization", "Bearer " + token);
         List<Transport> transports = new ArrayList<>();
         transports.add(new WebSocketTransport(new StandardWebSocketClient()));
         transports.add(new RestTemplateXhrTransport(new RestTemplate()));
@@ -100,7 +109,7 @@ public class ResultControllerTest {
                 });
 
                 try {
-                    session.send("/app/results", resultPayload);
+                    session.send(stompHeaders, resultPayload);
                 } catch (Throwable t) {
                     failure.set(t);
                     latch.countDown();
@@ -112,7 +121,7 @@ public class ResultControllerTest {
     private void connectToWSEndpoint(WebSocketStompClient stompClient, int wsPort, CountDownLatch latch,
                                      AtomicReference<Throwable> failure, StompSessionHandler handler)
             throws InterruptedException {
-        stompClient.connect("ws://localhost:{port}"+ AppConstants.WS_ENDPOINT, this.headers, handler, wsPort);
+        stompClient.connect("ws://localhost:{port}"+ AppConstants.WS_ENDPOINT, this.headers, this.stompHeaders, handler, wsPort);
 
         if (latch.await(5, TimeUnit.SECONDS)) {
             if (failure.get() != null) {
@@ -165,8 +174,9 @@ public class ResultControllerTest {
     @Test
     @Order(2)
     public void getResultApiTestSuccess() throws InterruptedException {
-        insteringResult(ResultDTO.builder().rollNumber(1).totalMarks(100).obtainedMarks(55).build());
+        insertingResult(ResultDTO.builder().rollNumber(1).totalMarks(100).obtainedMarks(55).build());
         this.client.get().uri("/students/result/1")
+                .header("Authorization", "Bearer " + token)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(ResultDTO.class)
@@ -183,6 +193,7 @@ public class ResultControllerTest {
     @Order(2)
     public void getResultApiTestFailed_whenStudentNotFound(){
         this.client.get().uri("/students/result/122")
+                .header("Authorization", "Bearer " + token)
                 .exchange()
                 .expectStatus().isNotFound()
                 .expectBody()
@@ -194,6 +205,7 @@ public class ResultControllerTest {
     @Order(2)
     public void getResultApiTestFailed_whenNoResultFoundForStudent(){
         this.client.get().uri("/students/result/2")
+                .header("Authorization", "Bearer " + token)
                 .exchange()
                 .expectStatus().isNotFound()
                 .expectBody()
@@ -204,8 +216,9 @@ public class ResultControllerTest {
     @Test
     @Order(4)
     public void getAllResultApiTestSuccess() throws InterruptedException {
-        insteringResult(ResultDTO.builder().rollNumber(1).totalMarks(100).obtainedMarks(55).build());
+        insertingResult(ResultDTO.builder().rollNumber(1).totalMarks(100).obtainedMarks(55).build());
         this.client.get().uri("/students/result/1")
+                .header("Authorization", "Bearer " + token)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(ResultDTO.class)
@@ -219,7 +232,7 @@ public class ResultControllerTest {
     }
 
 
-    public void insteringResult(ResultDTO resultDTO) throws InterruptedException {
+    public void insertingResult(ResultDTO resultDTO) throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<Throwable> failure = new AtomicReference<>();
         connectToWSEndpoint(this.stompClient, this.port, latch, failure,  getStompSessionHandler(latch, failure, "/topic/results",

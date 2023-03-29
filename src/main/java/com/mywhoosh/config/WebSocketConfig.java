@@ -1,6 +1,7 @@
 package com.mywhoosh.config;
 
 import com.mywhoosh.common.AppConstants;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -11,6 +12,7 @@ import static com.mywhoosh.common.AppConstants.WS_ENDPOINT;
 
 @Configuration
 @EnableWebSocketMessageBroker
+@Slf4j
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override

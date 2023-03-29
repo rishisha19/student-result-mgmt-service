@@ -1,6 +1,8 @@
 package com.mywhoosh.exception;
 
 public interface ErrorMsgs {
+
+    String INVALID_FIELD_USERNAME_OR_PASSWORD = "Invalid Field username or password";
     String STUDENT_NOT_FOUND = "Student with roll number {} not found";
     String DUPLICATE_ROLL_NUMBER = "Student with same roll number already exists";
     String STUDENT_NAME_REQUIRED = "Student Name is required";

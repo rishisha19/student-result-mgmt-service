@@ -10,6 +10,12 @@ public class StudentMgmtException extends RuntimeException{
         super(message, cause);
     }
 
+    public static class InvalidRequestException extends StudentMgmtException {
+        public InvalidRequestException(String message) {
+            super(message);
+        }
+    }
+
     public static class StudentValidationException extends StudentMgmtException{
         public StudentValidationException(String message) {
             super(message);

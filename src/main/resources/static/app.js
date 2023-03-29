@@ -1,4 +1,5 @@
 var stompClient = null;
+var authToken = null;
 
 function setConnected(connected) {
     $("#connect").prop("disabled", connected);
@@ -12,12 +13,36 @@ function setConnected(connected) {
     $("#results").html("");
 }
 
-function connect() {
+async function connect() {
+    // const options = {
+    //     method: 'POST',
+    //     headers: {
+    //         'Content-Type' : 'application/json',   
+    //     },
+    //     body: JSON.stringify({
+    //         userName: 'admin',
+    //         password: 'admin'
+    //     })
+    // }
+    // token = await fetch('http://example.com/api/token')
+    // .then(response => response.json())
+    // .then(data => {
+    //     console.log(data);
+    //     const token = data.token;
+    //     return token
+    // });
+    // {
+    //     Authorization: `Bearer ${token}`
+    //   }
+    
+    // console.log(token)
     var socket = new SockJS('http://localhost:9080/results-ws');
     stompClient = Stomp.over(socket);
+    
     stompClient.connect({}, function (frame) {
         setConnected(true);
         console.log('Connected: ' + frame);
+        
         stompClient.subscribe('/topic/results', function (greeting) {
             showGreeting(JSON.parse(greeting.body));
         });

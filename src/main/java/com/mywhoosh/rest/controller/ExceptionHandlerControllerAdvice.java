@@ -11,6 +11,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.support.WebExchangeBindException;
+
+import java.util.Objects;
 
 @RestControllerAdvice
 @Slf4j
@@ -23,13 +26,24 @@ public class ExceptionHandlerControllerAdvice {
         return new ResponseEntity<>(ErrorResponse.builder().status("failed").message(ex.getMessage()).build(), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ExceptionHandler({MethodArgumentNotValidException.class, WebExchangeBindException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<Object> handleArgumentValidation(MethodArgumentNotValidException ex) {
+    public ResponseEntity<Object> handleArgumentValidation(Exception ex) {
         log.error("MethodArgumentNotValidException: ", ex);
+        if(ex instanceof MethodArgumentNotValidException)
+            return new ResponseEntity<>(ErrorResponse.builder()
+                    .status("failed")
+                    .message(Objects.requireNonNull(((MethodArgumentNotValidException) ex).getBindingResult().getFieldError()).getDefaultMessage())
+                    .build(), HttpStatus.BAD_REQUEST);
+        else if(ex instanceof WebExchangeBindException)
+            return new ResponseEntity<>(ErrorResponse.builder()
+                    .status("failed")
+                    .message(Objects.requireNonNull(((WebExchangeBindException) ex).getBindingResult().getFieldError()).getDefaultMessage())
+                    .build(), HttpStatus.BAD_REQUEST);
+        else
         return new ResponseEntity<>(ErrorResponse.builder()
                 .status("failed")
-                .message(ex.getFieldError().getDefaultMessage())
+                .message(ex.getMessage())
                 .build(), HttpStatus.BAD_REQUEST);
     }
 
@@ -44,9 +58,10 @@ public class ExceptionHandlerControllerAdvice {
                 .build(), HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(StudentMgmtException.DuplicateRollNumberException.class)
+    @ExceptionHandler({StudentMgmtException.DuplicateRollNumberException.class,
+            StudentMgmtException.InvalidRequestException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<Object> badRequest(StudentMgmtException.DuplicateRollNumberException ex) {
+    public ResponseEntity<Object> badRequest(StudentMgmtException ex) {
         log.error("DuplicateRollNumberException: ", ex);
         return new ResponseEntity<>(ErrorResponse.builder()
                 .status("failed")

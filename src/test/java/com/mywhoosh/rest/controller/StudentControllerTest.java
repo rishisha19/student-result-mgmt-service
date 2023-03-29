@@ -4,8 +4,11 @@ import com.mywhoosh.common.Status;
 import com.mywhoosh.exception.ErrorMsgs;
 import com.mywhoosh.persistence.repository.StudentRepository;
 import com.mywhoosh.rest.model.StudentDTO;
+import com.mywhoosh.service.impl.AuthService;
+import com.mywhoosh.util.TestUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.slf4j.helpers.MessageFormatter;
@@ -31,9 +34,19 @@ class StudentControllerTest {
     @Autowired
     private StudentRepository studentRepository;
 
+    @Autowired
+    private AuthService authService;
+
+    String token;
+    @BeforeAll
+    void setup() {
+        token = TestUtils.registerUserAndRetrieveToken(authService, client, "admin", "admin");
+    }
+
     @Test
     void addStudentShouldAddStudentInDB() {
         this.client.post().uri("/students")
+                .header("Authorization", MessageFormatter.format("Bearer {}", token).getMessage())
                 .body(Mono.just(StudentDTO.builder()
                                 .name("Test")
                                 .rollNumber(3)
@@ -49,6 +62,7 @@ class StudentControllerTest {
     @Test
     void addStudentShould_throwBadRequestOnName() {
         this.client.post().uri("/students")
+                .header("Authorization", MessageFormatter.format("Bearer {}", token).getMessage())
                 .body(Mono.just(StudentDTO.builder()
                         .rollNumber(3)
                         .grade(1)
@@ -64,6 +78,7 @@ class StudentControllerTest {
     @Test
     void addStudentShould_throwBadRequestOnFatherName() {
         this.client.post().uri("/students")
+                .header("Authorization", MessageFormatter.format("Bearer {}", token).getMessage())
                 .body(Mono.just(StudentDTO.builder()
                         .rollNumber(4)
                         .name("Test")
@@ -79,6 +94,7 @@ class StudentControllerTest {
     @Test
     void addStudentShould_throwBadRequestOnInvalidRollNumber() {
         this.client.post().uri("/students")
+                .header("Authorization", MessageFormatter.format("Bearer {}", token).getMessage())
                 .body(Mono.just(StudentDTO.builder()
                         .rollNumber(-1)
                         .name("Test")
@@ -94,6 +110,7 @@ class StudentControllerTest {
     @Test
     void addStudentShould_throwBadRequestOnInvalidGrade() {
         this.client.post().uri("/students")
+                .header("Authorization", MessageFormatter.format("Bearer {}", token).getMessage())
                 .body(Mono.just(StudentDTO.builder()
                         .rollNumber(4)
                         .name("Test")
@@ -109,6 +126,7 @@ class StudentControllerTest {
     @Test
     void addStudentShould_throwBadRequestOnDuplicateRollNumber() {
         this.client.post().uri("/students")
+                .header("Authorization", MessageFormatter.format("Bearer {}", token).getMessage())
                 .body(Mono.just(StudentDTO.builder()
                         .rollNumber(1)
                         .name("Test")
@@ -125,6 +143,7 @@ class StudentControllerTest {
     @Test
     void deleteStudentSuccess() {
         this.client.method(HttpMethod.DELETE).uri("/students")
+                .header("Authorization", MessageFormatter.format("Bearer {}", token).getMessage())
                 .body(Mono.just(StudentDTO.builder()
                         .rollNumber(1)
                         .grade(1)
@@ -139,6 +158,7 @@ class StudentControllerTest {
     @Test
     void deleteStudent_throwNotFound() {
         this.client.method(HttpMethod.DELETE).uri("/students")
+                .header("Authorization", MessageFormatter.format("Bearer {}", token).getMessage())
                 .body(Mono.just(StudentDTO.builder()
                         .rollNumber(10)
                         .grade(1)
