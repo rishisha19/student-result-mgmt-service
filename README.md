@@ -103,7 +103,14 @@ API reference can be found at  [Swagger-UI](`http://localhost:9080/swagger-ui.ht
 
 #### Total time taken
 
-Answer : Took in days 4 with each day 1-3 hrs. Roughly 10-12 hrs.
+ Took in days 4 with each day 1-3 hrs. Roughly 10-12 hrs.
+
+#### FOr Security?
+
+Added api `/reg` to register user
+
+Added api `/auth` to login user and retrive jwt token, which then need to be added in Authorization header for all other apis.
+
 
 
 
