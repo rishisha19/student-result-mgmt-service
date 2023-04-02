@@ -82,6 +82,13 @@ public class ExceptionHandlerControllerAdvice {
     @MessageExceptionHandler
     @SendTo("/queue/errors")
     public String handleWSException(Throwable exception) {
-        return exception.getMessage();
+        log.error("Exception WS: ", exception);
+        if(exception instanceof org.springframework.messaging.handler.annotation.support.MethodArgumentNotValidException)
+            return Objects.requireNonNull(((org.springframework.messaging.handler.annotation.support.MethodArgumentNotValidException) exception)
+                    .getBindingResult().getFieldError()).getDefaultMessage();
+        else if(exception instanceof WebExchangeBindException)
+            return Objects.requireNonNull(((WebExchangeBindException) exception).getBindingResult().getFieldError()).getDefaultMessage();
+        else
+         return exception.getLocalizedMessage();
     }
 }

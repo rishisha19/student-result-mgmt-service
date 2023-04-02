@@ -4,24 +4,28 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mywhoosh.common.Remarks;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.time.LocalDateTime;
 
 @Builder
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
-@RequiredArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ResultDTO {
 
+    @Min(value = 1, message = "Total Marks should be greater than 0 & less than 100")
+    @Max(value = 100, message = "Total Marks should be greater than 0 & less than 100")
     @JsonProperty("TotalMarks")
-    Integer totalMarks;
+    int totalMarks;
 
+    @Min(value = 1, message = "Obtained Marks should be greater than 0 & less than 100")
+    @Max(value = 100, message = "Obtained Marks should be greater than 0 & less than 100")
     @JsonProperty("ObtainedMarks")
     int obtainedMarks;
 
@@ -42,7 +46,6 @@ public class ResultDTO {
 
     @JsonProperty("CreatedOn")
     public LocalDateTime createdOn;
-   @JsonProperty("UpdatedOn")
+    @JsonProperty("UpdatedOn")
     public LocalDateTime updatedOn;
-
 }

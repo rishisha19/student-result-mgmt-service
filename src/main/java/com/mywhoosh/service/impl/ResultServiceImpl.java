@@ -18,14 +18,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Comparator;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ResultServiceImpl implements ResultService {
-
     private final StudentRepository studentRepository;
     private final ResultRepository resultRepository;
     private final CollectionMapper mapper;
@@ -39,47 +36,39 @@ public class ResultServiceImpl implements ResultService {
         log.debug("Checking if result already exists for roll number [{}]", request.getRollNumber());
         Result defaultResult = mapper.toResultEntity(request);
         Mono<Result> resultMono = resultRepository.findByRollNumber(request.getRollNumber())
-                        .defaultIfEmpty(defaultResult);
+                .defaultIfEmpty(defaultResult);
         //Saved current result
         log.debug("Saving result for roll number [{}] for incoming request", request.getRollNumber());
-        Mono.zip(studentMono, resultMono)
-            .flatMap(tuple -> {
-                Student student = tuple.getT1();
-                Result result = tuple.getT2();
-                result.setGrade(student.getGrade());
-                result.setObtainedMarks(request.getObtainedMarks());
-                result.setTotalMarks(request.getTotalMarks());
-                result.setRemarks(request.getObtainedMarks() >= 0.5 * request.getTotalMarks()  ? Remarks.PASSED : Remarks.FAILED);
-                //result.setPositionInClass(1); //dummy value
-                return resultRepository.save(result);
-            }).block();
-       //update positions in class
-        log.debug("Get count of results with obtained marks lesser than or equal to [{}]", request.getObtainedMarks());
-        AtomicReference<Long> totalPositionsBelow = new AtomicReference<>(
-                resultRepository.countByObtainedMarksGreaterThan(request.getObtainedMarks()).block());
-        if(null == totalPositionsBelow.get())  totalPositionsBelow.set(0L);
-
-        log.debug("Updating position for all results with position greater than or equal to [{}]", totalPositionsBelow);
-         return resultRepository.findAllByObtainedMarksLessThanEqual(request.getObtainedMarks())
-                 .sort(Comparator.comparing(Result::getObtainedMarks).reversed())
-                 .map(result-> {
-                        totalPositionsBelow.set(totalPositionsBelow.get() + 1);
-                        result.setPositionInClass(totalPositionsBelow.get().intValue());
-                        log.debug("updating position [{}] for result with roll number [{}] obtained marks [{}] total marks [{}]",
-                                result.getPositionInClass(),
-                                result.getRollNumber(), result.getObtainedMarks(), result.getTotalMarks());
-                        return result;
-                }).collect(Collectors.toList())
-                 .map(resultList -> resultRepository.saveAll(resultList)
-                                    .filter(result -> result.getRollNumber() == request.getRollNumber())
-                                    .next())
-                 .flatMap(resultMono1 -> resultMono1.map(mapper::toResultDto));
+        return Mono.zip(studentMono, resultMono)
+                .flatMap(tuple -> {
+                    Student student = tuple.getT1();
+                    Result result = tuple.getT2();
+                    result.setGrade(student.getGrade());
+                    result.setObtainedMarks(request.getObtainedMarks());
+                    result.setTotalMarks(request.getTotalMarks());
+                    result.setRemarks(request.getObtainedMarks() >= 0.5 * request.getTotalMarks()  ? Remarks.PASSED : Remarks.FAILED);
+                    return resultRepository.save(result);
+                })
+                //updating positions in class
+                .flatMap(result -> resultRepository.findAllByOrderByObtainedMarksDesc()
+                        .index()
+                        .flatMap(tuple -> {
+                            Result result1 = tuple.getT2();
+                            result1.setPositionInClass(tuple.getT1().intValue() + 1);
+                            log.debug("updating position [{}] for roll number [{}] obtained marks [{}] ",
+                                    result1.getPositionInClass(), result1.getRollNumber(), result1.getObtainedMarks());
+                            return resultRepository.save(result1);
+                        })
+                        .filter(result1 -> result1.getRollNumber() == request.getRollNumber())
+                        .next()
+                        .map(mapper::toResultDto)
+                        .onErrorResume(StudentMgmtException.StudentNotFoundException.class, Mono::error));
     }
 
     @Override
     public Flux<ResultDTO> getAllStudentResults() throws StudentMgmtException {
         return resultRepository.findAll()
-                .sort(Comparator.comparing(Result::getTotalMarks).reversed())
+                .sort(Comparator.comparing(Result::getObtainedMarks).reversed())
                 .map(mapper::toResultDto);
     }
 

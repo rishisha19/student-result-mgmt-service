@@ -10,7 +10,5 @@ import reactor.core.publisher.Mono;
 public interface ResultRepository extends ReactiveMongoRepository<Result, String> {
 
     Mono<Result> findByRollNumber(int rollNumber);
-    Flux<Result> findAllByObtainedMarksLessThanEqual(int obtainedMarks);
-    Mono<Long> countByObtainedMarksGreaterThan(int rollNumber);
-
+    Flux<Result> findAllByOrderByObtainedMarksDesc();
 }

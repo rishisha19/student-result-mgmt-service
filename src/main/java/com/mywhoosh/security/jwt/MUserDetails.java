@@ -3,6 +3,7 @@ package com.mywhoosh.security.jwt;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -22,6 +23,7 @@ public class MUserDetails implements UserDetails {
    @NotBlank
     private String password;
 
+   @Indexed(unique = true)
    @NotBlank
     private String userName;
     private String type;
